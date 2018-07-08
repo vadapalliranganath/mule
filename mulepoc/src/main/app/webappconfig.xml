@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:context="http://www.springframework.org/schema/context" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+
+	<flow name="webappconfigFlow">
+
+		<http:listener config-ref="HDFC_HTTP_Listener_Configuration" path="/test" allowedMethods="POST" doc:name="HTTP" />
+
+		<logger message="Request pay load is #[payload]" level="INFO" doc:name="Logger" />
+
+		<byte-array-to-string-transformer doc:name="Byte Array to String" returnClass="java.lang.String" />
+
+		<logger message="#[payload]" level="INFO" doc:name="Logger" />
+
+		<json:json-to-object-transformer returnClass="com.mule.app.dto.EmployeeDTO" doc:name="JSON to Object" />
+
+		<logger message="data is #[payload]" level="INFO" doc:name="Logger" />
+		<set-variable variableName="emp" value="#[payload]" doc:name="Variable" />
+		<logger message="#[emp]" level="INFO" doc:name="Logger" />
+
+	</flow>
+
+	<flow name="springhibernateFlow">
+
+		<http:listener config-ref="HDFC_HTTP_Listener_Configuration" path="/findEmployeeById" allowedMethods="POST" doc:name="HTTP" />
+		
+        <byte-array-to-string-transformer returnClass="java.lang.String" doc:name="Byte Array to String"/>
+        
+        <logger message="Data is #[payload]" level="INFO" doc:name="Logger"/>
+        <json:json-to-object-transformer returnClass="com.mule.app.model.Employee" doc:name="JSON to Object"/>
+        <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+
+		<invoke object-ref="employeeService" method="findEmployeeById" doc:name="Invoke" methodArguments="1" />
+
+		<json:object-to-json-transformer doc:name="Object to JSON" />
+	</flow>
+
+</mule>
